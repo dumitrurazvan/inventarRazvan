@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">Inventar</string>
+
+    <!-- Printer Status -->
+    <string name="printer_status_label">Printer Status: </string>
+    <string name="connected">Connected</string>
+    <string name="disconnected">Disconnected</string>
+    <string name="connecting">Connecting...</string>
+
+    <!-- Button Labels -->
+    <string name="connect">Connect</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="print_test">Print Test</string>
+
 </resources>
