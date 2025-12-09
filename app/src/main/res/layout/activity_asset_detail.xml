@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Title -->
+        <TextView
+            android:id="@+id/tvAssetDetailTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Detalii bun"
+            android:textStyle="bold"
+            android:textSize="20sp" />
+
+        <!-- Status line + progress -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+
+            <TextView
+                android:id="@+id/tvAssetDetailStatus"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text=" "
+                android:textSize="13sp"
+                android:textColor="?android:attr/textColorSecondary" />
+
+            <ProgressBar
+                android:id="@+id/progressBarAssetDetail"
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- Identification -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Identificare"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Nr inventar:" />
+
+        <TextView
+            android:id="@+id/tvAssetDetailNrInv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="-" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Tip:"
+            android:layout_marginTop="4dp"/>
+
+        <TextView
+            android:id="@+id/tvAssetDetailType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="-" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Nr crt:"
+            android:layout_marginTop="4dp" />
+
+        <TextView
+            android:id="@+id/tvAssetDetailNrCrt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="-" />
+
+        <!-- Business fields (editable) -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Denumire:"
+            android:layout_marginTop="12dp" />
+
+        <EditText
+            android:id="@+id/etAssetDetailDenumire"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textCapSentences" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Caracteristici:"
+            android:layout_marginTop="8dp" />
+
+        <EditText
+            android:id="@+id/etAssetDetailCaracteristici"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textMultiLine"
+            android:minLines="2" />
+
+        <!-- Gestionar / custodie (editable) -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Gestionar actual:"
+            android:layout_marginTop="12dp" />
+
+        <EditText
+            android:id="@+id/etAssetDetailGestionarActual"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textCapWords" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Compartiment gestionar:"
+            android:layout_marginTop="8dp" />
+
+        <EditText
+            android:id="@+id/etAssetDetailCompartimentGestionar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textCapWords" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Custodie:"
+            android:layout_marginTop="12dp" />
+
+        <EditText
+            android:id="@+id/etAssetDetailCustodie"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textCapWords" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Compartiment custodie:"
+            android:layout_marginTop="8dp" />
+
+        <EditText
+            android:id="@+id/etAssetDetailCompartimentCustodie"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textCapWords" />
+
+        <!-- Location (editable) -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Locație:"
+            android:layout_marginTop="12dp" />
+
+        <EditText
+            android:id="@+id/etAssetDetailLocatie"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textCapWords" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Cameră:"
+            android:layout_marginTop="8dp"/>
+
+        <EditText
+            android:id="@+id/etAssetDetailCamera"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text" />
+
+        <!-- Flags + room info -->
+        <TextView
+            android:id="@+id/tvAssetDetailFlags"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Stare: "
+            android:layout_marginTop="12dp" />
+
+        <TextView
+            android:id="@+id/tvAssetDetailRoom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Cameră / roomId:"
+            android:layout_marginTop="4dp" />
+
+        <!-- Action buttons -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="16dp"
+            android:background="@android:color/darker_gray" />
+
+        <Button
+            android:id="@+id/btnDetailValidate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Validează"
+            android:textAllCaps="false"
+            android:layout_marginTop="12dp" />
+
+        <Button
+            android:id="@+id/btnDetailPrint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Printează eticheta"
+            android:textAllCaps="false"
+            android:layout_marginTop="8dp" />
+
+        <Button
+            android:id="@+id/btnDetailUpdate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Actualizează datele"
+            android:textAllCaps="false"
+            android:layout_marginTop="8dp" />
+
+        <Button
+            android:id="@+id/btnDetailDelete"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Șterge bunul"
+            android:textAllCaps="false"
+            android:layout_marginTop="8dp"
+            android:textColor="@android:color/holo_red_dark" />
+
+    </LinearLayout>
+</ScrollView>
