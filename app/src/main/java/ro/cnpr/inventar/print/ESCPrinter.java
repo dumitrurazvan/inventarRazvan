@@ -4,106 +4,92 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-/**
- * Builds ESC/POS commands for the HPRT HM-A300E (or similar).
- *
- * Layout for 50x32mm label:
- * - Left half: QR code with nrInventar.
- * - Right half (top -> bottom):
- *   1) Big bold nrInventar
- *   2) Title (caracteristici / denumire)
- *   3) Locatie - camera
- *   4) Data: yyyy-MM-dd
- */
 public class ESCPrinter {
 
+    // Helper to set the absolute print position (in dots) in page mode.
     private static void setAbsolutePosition(ByteArrayOutputStream stream, int x, int y) throws IOException {
+        // Set horizontal position: ESC $ nL nH
         stream.write(new byte[]{0x1B, 0x24, (byte) (x % 256), (byte) (x / 256)});
+        // Set vertical position: GS $ nL nH
         stream.write(new byte[]{0x1D, 0x24, (byte) (y % 256), (byte) (y / 256)});
     }
 
     /**
-     * Builds ESC/POS bytes for one label.
+     * Generates ESC/POS commands to print a label for a 50x32mm media size.
+     * The layout mimics the qr_scan_item.xml view, with the QR code on the left
+     * and text information on the right.
      *
-     * @param nrInventar      QR content + large text.
-     * @param title           asset title (caracteristici / denumire).
-     * @param locationCamera  e.g. "DACIA - 203".
-     * @param dateText        e.g. "2025-01-15" (already formatted). May be null.
+     * @return A byte array containing the ESC/POS commands.
      */
-    public static byte[] buildLabelCommand(String nrInventar,
-                                           String title,
-                                           String locationCamera,
-                                           String dateText) {
+    public static byte[] getESCCommand(String nrInventar, String building, String room, String date) {
         try {
-            if (nrInventar == null) {
-                nrInventar = "";
-            }
-            if (title == null) {
-                title = "";
-            }
-            if (locationCamera == null) {
-                locationCamera = "";
-            }
-            if (dateText == null) {
-                dateText = "";
-            }
-
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            String shortDate = (date != null && date.length() > 10) ? date.substring(0, 10) : date;
 
+            // Initialize printer - resets any previous settings.
             stream.write(new byte[]{0x1B, 0x40});
+
+            // --- Begin Page Mode Block ---
+            // Enter Page Mode: ESC L
             stream.write(new byte[]{0x1B, 0x4C});
-            stream.write(new byte[]{
-                    0x1B, 0x57,
-                    0x00, 0x00,
-                    0x00, 0x00,
-                    (byte) 144, 0x01,
-                    0x00, 0x01
-            });
 
+            // Set the print area for page mode: ESC W xL xH yL yH dxL dxH dyL dyH
+            // Based on 203dpi (8 dots/mm): 50mm width = 400 dots, 32mm height = 256 dots.
+            // Area starts at 0,0 and has a width of 400 and height of 256.
+            stream.write(new byte[]{0x1B, 0x57, 0, 0, 0, 0, (byte) 144, 1, (byte) 0, 1});
 
+            // --- 1. Place and Print QR Code ---
             byte[] qrData = nrInventar.getBytes(StandardCharsets.UTF_8);
 
+            // Set position for QR code (X=24 dots, Y=65 dots)
             setAbsolutePosition(stream, 24, 65);
 
-            stream.write(new byte[]{0x1D, 0x28, 0x6B, 0x04, 0x00, 0x31, 0x41, 0x32, 0x00});
-            stream.write(new byte[]{0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x43, 0x06});
-            stream.write(new byte[]{0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x45, 0x31});
+            // Generate QR Code (using standard ESC/POS commands)
+            stream.write(new byte[]{0x1D, 0x28, 0x6B, 0x04, 0x00, 0x31, 0x41, 0x32, 0x00}); // Model: QR Code Model 2
+            stream.write(new byte[]{0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x43, 0x06}); // Module Size: 6 dots
+            stream.write(new byte[]{0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x45, 0x31}); // Error Correction: Level M
 
             int dataLength = qrData.length + 3;
-            stream.write(new byte[]{
-                    0x1D, 0x28, 0x6B,
-                    (byte) (dataLength % 256),
-                    (byte) (dataLength / 256),
-                    0x31, 0x50, 0x30
-            });
-            stream.write(qrData);
-            stream.write(new byte[]{0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x51, 0x30});
+            stream.write(new byte[]{0x1D, 0x28, 0x6B, (byte) (dataLength % 256), (byte) (dataLength / 256), 0x31, 0x50, 0x30});
+            stream.write(qrData); // Store data
+            stream.write(new byte[]{0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x51, 0x30}); // Print from storage
 
-            setAbsolutePosition(stream, 190, 60);
-            stream.write(new byte[]{0x1B, 0x45, 0x01});
-            stream.write(new byte[]{0x1D, 0x21, 0x01});
+            // --- 2. Place and Print Text Lines ---
+
+            // Print nrInventar (larger, bolded)
+            setAbsolutePosition(stream, 190, 65);
+            stream.write(new byte[]{0x1B, 0x45, 0x01}); // Bold on
+            stream.write(new byte[]{0x1D, 0x21, 0x01}); // Double height
             stream.write(nrInventar.getBytes("GBK"));
-            stream.write(new byte[]{0x1B, 0x45, 0x00});
-            stream.write(new byte[]{0x1D, 0x21, 0x00});
+            stream.write(new byte[]{0x1B, 0x45, 0x00}); // Bold off
+            stream.write(new byte[]{0x1D, 0x21, 0x00}); // Normal size
 
-            setAbsolutePosition(stream, 190, 100);
-            stream.write(title.getBytes("GBK"));
+            // NOTE: The 'building' parameter actually contains the asset's title/description,
+            // and the 'room' parameter contains the location string. The labels on the
+            // printed output are based on the original project's format.
 
-            setAbsolutePosition(stream, 190, 135);
-            stream.write(locationCamera.getBytes("GBK"));
+            // Y-position is adjusted to prevent overlap with the double-height inventory number.
+            // Print Title (passed in 'building' parameter) with "Cladire:" prefix
+            setAbsolutePosition(stream, 190, 115); // Was 105, caused overlap
+            stream.write(("Cladire: " + building).getBytes("GBK"));
 
-            if (!dateText.isEmpty()) {
-                setAbsolutePosition(stream, 190, 170);
-                String dateLine = "Data: " + dateText;
-                stream.write(dateLine.getBytes("GBK"));
-            }
+            // Print Location (passed in 'room' parameter) with "Camera:" prefix
+            setAbsolutePosition(stream, 190, 140); // Was 135
+            stream.write(("Camera: " + room).getBytes("GBK"));
 
+            // Print Date
+            setAbsolutePosition(stream, 190, 165);
+            stream.write(("Data: " + shortDate).getBytes("GBK"));
+
+            // Print the content of the page and return to standard mode: FF
             stream.write(0x0C);
 
+            // --- End Page Mode Block ---
+
             return stream.toByteArray();
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
-            return new byte[0];
+            return new byte[0]; // Return empty array on error
         }
     }
 }

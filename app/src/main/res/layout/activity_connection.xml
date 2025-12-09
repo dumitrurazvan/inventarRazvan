@@ -92,4 +92,68 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="24dp" />
 
+    <!-- Printer Status -->
+    <TextView
+        android:id="@+id/tvPrinterStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Printer Status: Disconnected"
+        app:layout_constraintTop_toBottomOf="@+id/btnConnect"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="16dp"/>
+
+    <!-- Printer Name -->
+    <TextView
+        android:id="@+id/tvPrinterNameLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Printer Name"
+        app:layout_constraintTop_toBottomOf="@id/tvPrinterStatus"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="16dp" />
+
+    <EditText
+        android:id="@+id/etPrinterName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="HM-A300-0F44"
+        android:inputType="text"
+        app:layout_constraintTop_toBottomOf="@id/tvPrinterNameLabel"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Printer Buttons -->
+    <LinearLayout
+        android:id="@+id/printer_buttons_layout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@+id/etPrinterName"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp">
+
+        <Button
+            android:id="@+id/btnConnectPrinter"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Connect Printer"/>
+
+        <Button
+            android:id="@+id/btnDisconnectPrinter"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Disconnect"/>
+
+        <Button
+            android:id="@+id/btnPrintTest"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Print Test"/>
+
+    </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
