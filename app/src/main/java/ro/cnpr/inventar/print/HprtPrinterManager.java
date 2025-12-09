@@ -136,7 +136,7 @@ public class HprtPrinterManager {
             throw new IOException("Printer not connected.");
         }
 
-        byte[] data = ESCPrinter.buildLabelCommand(nrInventar, title, locationCamera, dateText);
+        byte[] data = ESCPrinter.getESCCommand(nrInventar, title, locationCamera, dateText);
         if (data.length == 0) {
             throw new IOException("ESC/POS command buffer is empty (build failed).");
         }
