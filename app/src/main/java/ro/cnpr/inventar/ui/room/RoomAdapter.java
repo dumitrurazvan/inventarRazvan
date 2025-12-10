@@ -48,28 +48,27 @@ public class RoomAdapter extends RecyclerView.Adapter<RoomAdapter.RoomViewHolder
 
     static class RoomViewHolder extends RecyclerView.ViewHolder {
 
-        private final TextView tvRoomMain;
-        private final TextView tvRoomSubtitle;
+        private final TextView roomNameTextView;
+        private final TextView roomStatsTextView;
 
         public RoomViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvRoomMain = itemView.findViewById(R.id.tvRoomMain);
-            tvRoomSubtitle = itemView.findViewById(R.id.tvRoomSubtitle);
+            roomNameTextView = itemView.findViewById(R.id.room_name_text_view);
+            roomStatsTextView = itemView.findViewById(R.id.room_stats_text_view);
         }
 
         public void bind(RoomDto room, OnRoomClickListener listener) {
-            String camera = room.getCamera() != null ? room.getCamera() : "-";
-            String etaj = room.getEtaj() != null ? room.getEtaj() : "-";
-            int count = room.getAssetCount();
+            String displayName;
+            if (room.getDisplayName() != null && !room.getDisplayName().isEmpty()) {
+                displayName = room.getDisplayName();
+            } else {
+                String camera = room.getCamera() != null ? room.getCamera() : "-";
+                String locatie = room.getLocatie() != null ? room.getLocatie() : "-";
+                displayName = locatie + " - " + camera;
+            }
 
-            String main = "Camera " + camera + " - Etaj " + etaj + " - " + count + " elemente";
-            tvRoomMain.setText(main);
-
-            String locatie = room.getLocatie() != null ? room.getLocatie() : "";
-            String subtitle = room.getDisplayName() != null
-                    ? room.getDisplayName()
-                    : (locatie + " - " + camera);
-            tvRoomSubtitle.setText(subtitle);
+            roomNameTextView.setText(displayName);
+            roomStatsTextView.setText("codes: " + room.getAssetCount());
 
             itemView.setOnClickListener(v -> {
                 if (listener != null) {
