@@ -136,6 +136,9 @@ public class HprtPrinterManager {
             throw new IOException("Printer not connected.");
         }
 
+        // Explicitly reset the printer to a known state before each print job.
+        outputStream.write(new byte[]{0x1B, 0x40}); // ESC @ - Initialize Printer
+
         byte[] data = ESCPrinter.getESCCommand(nrInventar, title, locationCamera, dateText);
         if (data.length == 0) {
             throw new IOException("ESC/POS command buffer is empty (build failed).");
