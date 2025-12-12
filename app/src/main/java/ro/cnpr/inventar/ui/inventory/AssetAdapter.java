@@ -33,17 +33,20 @@ public class AssetAdapter extends RecyclerView.Adapter<AssetAdapter.AssetViewHol
 
     private final List<AssetDto> assets;
     private final Set<Long> selectedAssetIds;
+    private final String roomDisplayName;
     private final OnSelectionChangedListener selectionListener;
     private final OnValidateClickListener validateClickListener;
     private final OnAssetClickListener assetClickListener;
 
     public AssetAdapter(List<AssetDto> assets,
                         Set<Long> selectedAssetIds,
+                        String roomDisplayName,
                         OnSelectionChangedListener selectionListener,
                         OnValidateClickListener validateClickListener,
                         OnAssetClickListener assetClickListener) {
         this.assets = assets;
         this.selectedAssetIds = selectedAssetIds;
+        this.roomDisplayName = roomDisplayName;
         this.selectionListener = selectionListener;
         this.validateClickListener = validateClickListener;
         this.assetClickListener = assetClickListener;
@@ -60,7 +63,7 @@ public class AssetAdapter extends RecyclerView.Adapter<AssetAdapter.AssetViewHol
     @Override
     public void onBindViewHolder(@NonNull AssetViewHolder holder, int position) {
         AssetDto asset = assets.get(position);
-        holder.bind(asset, selectedAssetIds, selectionListener, validateClickListener, assetClickListener);
+        holder.bind(asset, selectedAssetIds, roomDisplayName, selectionListener, validateClickListener, assetClickListener);
     }
 
     @Override
@@ -91,6 +94,7 @@ public class AssetAdapter extends RecyclerView.Adapter<AssetAdapter.AssetViewHol
 
         public void bind(AssetDto asset,
                          Set<Long> selectedAssetIds,
+                         String roomDisplayName,
                          OnSelectionChangedListener selectionListener,
                          OnValidateClickListener validateClickListener,
                          OnAssetClickListener assetClickListener) {
@@ -103,19 +107,7 @@ public class AssetAdapter extends RecyclerView.Adapter<AssetAdapter.AssetViewHol
             }
             tvTitle.setText(title);
 
-            String den = asset.getDenumireObiect();
-            String nr = asset.getNrInventar();
-            String subtitle;
-            if (notEmpty(den) && notEmpty(nr)) {
-                subtitle = den + " – " + nr;
-            } else if (notEmpty(den)) {
-                subtitle = den;
-            } else if (notEmpty(nr)) {
-                subtitle = nr;
-            } else {
-                subtitle = "";
-            }
-            tvSubtitle.setText(subtitle);
+            tvSubtitle.setText(roomDisplayName);
 
             String owner = asset.getGestionarActual();
             tvOwner.setText(notEmpty(owner) ? owner : "");

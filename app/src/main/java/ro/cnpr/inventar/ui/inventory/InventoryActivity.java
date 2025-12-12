@@ -130,6 +130,7 @@ public class InventoryActivity extends AppCompatActivity {
         adapter = new AssetAdapter(
                 assets,
                 selectedAssetIds,
+                roomDisplayName,
                 (asset, selected) -> {
                     if (selected) {
                         selectedAssetIds.add(asset.getId());
@@ -376,18 +377,12 @@ public class InventoryActivity extends AppCompatActivity {
                         Toast.LENGTH_SHORT).show();
 
                 String labelTitle = buildLabelTitle(updated);
-                String locCam = locatie + " - " + camera;
-                boolean printOk = PrinterHelper.printLabel(
+                PrinterHelper.printLabel(
                         InventoryActivity.this,
                         updated.getNrInventar(),
                         labelTitle,
-                        locCam
+                        roomDisplayName
                 );
-                if (!printOk) {
-                    Toast.makeText(InventoryActivity.this,
-                            "Tipărire eșuată, dar bunul este marcat identificat în sistem.",
-                            Toast.LENGTH_LONG).show();
-                }
             }
 
             @Override
@@ -638,19 +633,12 @@ public class InventoryActivity extends AppCompatActivity {
                 applyUpdatedAsset(updated);
 
                 String labelTitle = buildLabelTitle(updated);
-                String locCam = locatie + " - " + camera;
-                boolean printOk = PrinterHelper.printLabel(
+                PrinterHelper.printLabel(
                         InventoryActivity.this,
                         updated.getNrInventar(),
                         labelTitle,
-                        locCam
+                        roomDisplayName
                 );
-                if (!printOk) {
-                    Toast.makeText(InventoryActivity.this,
-                            "Tipărire eșuată pentru " + nrInv
-                                    + ", dar bunul este marcat identificat.",
-                            Toast.LENGTH_LONG).show();
-                }
 
                 runBatchValidation(apiService, batchList, index + 1);
             }
