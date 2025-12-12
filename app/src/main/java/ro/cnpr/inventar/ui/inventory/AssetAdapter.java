@@ -8,6 +8,7 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
@@ -70,6 +71,7 @@ public class AssetAdapter extends RecyclerView.Adapter<AssetAdapter.AssetViewHol
     static class AssetViewHolder extends RecyclerView.ViewHolder {
 
         private final View viewStatusBar;
+        private final View assetItemLayout;
         private final TextView tvTitle;
         private final TextView tvSubtitle;
         private final TextView tvOwner;
@@ -79,6 +81,7 @@ public class AssetAdapter extends RecyclerView.Adapter<AssetAdapter.AssetViewHol
         public AssetViewHolder(@NonNull View itemView) {
             super(itemView);
             viewStatusBar = itemView.findViewById(R.id.viewStatusBar);
+            assetItemLayout = itemView.findViewById(R.id.asset_item_layout);
             tvTitle = itemView.findViewById(R.id.tvAssetTitle);
             tvSubtitle = itemView.findViewById(R.id.tvAssetSubtitle);
             tvOwner = itemView.findViewById(R.id.tvAssetOwner);
@@ -136,15 +139,11 @@ public class AssetAdapter extends RecyclerView.Adapter<AssetAdapter.AssetViewHol
             });
 
             if (identified) {
-                viewStatusBar.setBackgroundColor(
-                        itemView.getResources().getColor(android.R.color.holo_green_dark));
-                itemView.setBackgroundColor(
-                        itemView.getResources().getColor(android.R.color.holo_green_light));
+                viewStatusBar.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), android.R.color.holo_green_dark));
+                assetItemLayout.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), android.R.color.holo_green_light));
             } else {
-                viewStatusBar.setBackgroundColor(
-                        itemView.getResources().getColor(android.R.color.darker_gray));
-                itemView.setBackgroundColor(
-                        itemView.getResources().getColor(android.R.color.transparent));
+                viewStatusBar.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), android.R.color.darker_gray));
+                assetItemLayout.setBackground(ContextCompat.getDrawable(itemView.getContext(), R.drawable.item_background));
             }
 
             btnValidate.setEnabled(true);

@@ -14,12 +14,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -39,7 +39,7 @@ public class LocationSelectorActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private RecyclerView rvLocations;
 
-    private final List<String> locations = new ArrayList<>();
+    private final List<LocationWithRoomCount> locationsWithRoomCount = new ArrayList<>();
     private LocationAdapter adapter;
 
     @Override
@@ -52,7 +52,7 @@ public class LocationSelectorActivity extends AppCompatActivity {
         rvLocations = findViewById(R.id.rvLocations);
 
         rvLocations.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new LocationAdapter(locations, this::onLocationSelected);
+        adapter = new LocationAdapter(locationsWithRoomCount, this::onLocationSelected);
         rvLocations.setAdapter(adapter);
 
         loadRoomsFromBackend();
@@ -99,28 +99,26 @@ public class LocationSelectorActivity extends AppCompatActivity {
 
                 RoomsCache.setRooms(roomList);
 
-                Set<String> locationSet = new LinkedHashSet<>();
+                Map<String, Integer> locationRoomCount = new HashMap<>();
                 for (RoomDto room : roomList) {
                     String loc = room.getLocatie();
                     if (!TextUtils.isEmpty(loc)) {
-                        locationSet.add(loc);
+                        locationRoomCount.put(loc, locationRoomCount.getOrDefault(loc, 0) + 1);
                     }
                 }
 
-                List<String> sortedLocations = new ArrayList<>(locationSet);
-                Collections.sort(sortedLocations, new Comparator<String>() {
-                    @Override
-                    public int compare(String o1, String o2) {
-                        return o1.toLowerCase(Locale.ROOT)
-                                .compareTo(o2.toLowerCase(Locale.ROOT));
-                    }
-                });
+                List<LocationWithRoomCount> sortedLocations = new ArrayList<>();
+                for (Map.Entry<String, Integer> entry : locationRoomCount.entrySet()) {
+                    sortedLocations.add(new LocationWithRoomCount(entry.getKey(), entry.getValue()));
+                }
 
-                locations.clear();
-                locations.addAll(sortedLocations);
+                Collections.sort(sortedLocations, Comparator.comparing(location -> location.getLocationName().toLowerCase(Locale.ROOT)));
+
+                locationsWithRoomCount.clear();
+                locationsWithRoomCount.addAll(sortedLocations);
                 adapter.notifyDataSetChanged();
 
-                if (locations.isEmpty()) {
+                if (locationsWithRoomCount.isEmpty()) {
                     tvStatus.setText("Nu există locații distincte.");
                 } else {
                     tvStatus.setText("Alege o locație din listă.");
@@ -138,9 +136,9 @@ public class LocationSelectorActivity extends AppCompatActivity {
         });
     }
 
-    private void onLocationSelected(String location) {
+    private void onLocationSelected(LocationWithRoomCount location) {
         Intent intent = new Intent(this, RoomSelectorActivity.class);
-        intent.putExtra(RoomSelectorActivity.EXTRA_LOCATIE, location);
+        intent.putExtra(RoomSelectorActivity.EXTRA_LOCATIE, location.getLocationName());
         startActivity(intent);
     }
 }
