@@ -76,6 +76,7 @@ public class AssetAdapter extends RecyclerView.Adapter<AssetAdapter.AssetViewHol
         private final View viewStatusBar;
         private final View assetItemLayout;
         private final TextView tvTitle;
+        private final TextView tvNrInventar;
         private final TextView tvSubtitle;
         private final TextView tvOwner;
         private final CheckBox cbAsset;
@@ -86,6 +87,7 @@ public class AssetAdapter extends RecyclerView.Adapter<AssetAdapter.AssetViewHol
             viewStatusBar = itemView.findViewById(R.id.viewStatusBar);
             assetItemLayout = itemView.findViewById(R.id.asset_item_layout);
             tvTitle = itemView.findViewById(R.id.tvAssetTitle);
+            tvNrInventar = itemView.findViewById(R.id.tvAssetNrInventar);
             tvSubtitle = itemView.findViewById(R.id.tvAssetSubtitle);
             tvOwner = itemView.findViewById(R.id.tvAssetOwner);
             cbAsset = itemView.findViewById(R.id.cbAsset);
@@ -107,6 +109,7 @@ public class AssetAdapter extends RecyclerView.Adapter<AssetAdapter.AssetViewHol
             }
             tvTitle.setText(title);
 
+            tvNrInventar.setText(asset.getNrInventar());
             tvSubtitle.setText(roomDisplayName);
 
             String owner = asset.getGestionarActual();
