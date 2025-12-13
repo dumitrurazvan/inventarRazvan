@@ -118,7 +118,7 @@ public class AssetDetailActivity extends AppCompatActivity {
             btnPrint.setEnabled(false);
             return;
         }
-
+//test
         String baseUrl = "http://" + ip + ":" + port + "/api/";
         Retrofit retrofit = ApiClient.create(baseUrl);
         apiService = retrofit.create(ApiService.class);
