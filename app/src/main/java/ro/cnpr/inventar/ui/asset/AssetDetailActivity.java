@@ -2,8 +2,11 @@ package ro.cnpr.inventar.ui.asset;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.text.SpannableString;
 import android.text.TextUtils;
+import android.text.style.ForegroundColorSpan;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -120,7 +123,7 @@ public class AssetDetailActivity extends AppCompatActivity {
         Retrofit retrofit = ApiClient.create(baseUrl);
         apiService = retrofit.create(ApiService.class);
     }
-
+//test
     private void bindAssetToViews() {
         String title = asset.getCaracteristiciObiect();
         if (isEmpty(title)) {
@@ -143,9 +146,9 @@ public class AssetDetailActivity extends AppCompatActivity {
         etCamera.setText(safeOrEmpty(asset.getCamera()));
 
         String flags = "Activ: " + asset.isActive()
-                + " | Identificat: " + asset.isIdentified()
-                + " | Propus casare flag: " + asset.isPropusCasareFlag()
-                + " | Propus casare: " + safe(asset.getPropusCasare());
+                + "\nIdentificat: " + asset.isIdentified()
+                + "\nPropus casare flag: " + asset.isPropusCasareFlag()
+                + "\nPropus casare: " + safe(asset.getPropusCasare());
         tvFlags.setText("Stare: " + flags);
 
         Long roomId = asset.getRoomId();
@@ -154,12 +157,14 @@ public class AssetDetailActivity extends AppCompatActivity {
         String loc = safe(asset.getLocatia());
         String cam = safe(asset.getCamera());
 
-        String roomInfo = "Locație: " + loc + " / cameră: " + cam + " (etaj " + etaj + ")\n"
-                + "Room ID: " + (roomId != null ? roomId : "-") + " / " + roomName;
+        String roomInfo = "Locație: " + loc + "\ncameră: " + cam + " (etaj " + etaj + ")\n"
+                + "Room ID: " + (roomId != null ? roomId : "-") + "\n" + roomName;
         tvRoomInfo.setText(roomInfo);
 
         if (asset.isIdentified()) {
-            btnValidate.setText("Marchează NEidentificat");
+            SpannableString text = new SpannableString("Marchează NEidentificat");
+            text.setSpan(new ForegroundColorSpan(Color.RED), 9, 12, 0);
+            btnValidate.setText(text);
         } else {
             btnValidate.setText("Validează");
         }
@@ -328,12 +333,10 @@ public class AssetDetailActivity extends AppCompatActivity {
 
         if (ok) {
             Toast.makeText(this,
-                    "Etichetă trimisă la imprimare (mock).",
+                    "Etichetă trimisă la imprimantă.",
                     Toast.LENGTH_SHORT).show();
         } else {
-            Toast.makeText(this,
-                    "Tipărire eșuată.",
-                    Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Eroare la tipărire.", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -345,26 +348,7 @@ public class AssetDetailActivity extends AppCompatActivity {
             return;
         }
 
-        final String nrInv = asset.getNrInventar();
-        if (TextUtils.isEmpty(nrInv)) {
-            Toast.makeText(this,
-                    "Nu există număr de inventar pentru acest bun.",
-                    Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        new AlertDialog.Builder(this)
-                .setTitle("Actualizezi datele bunului?")
-                .setMessage("Ești sigur că vrei să trimiți modificările în sistem?\n\nNr inventar: " + nrInv)
-                .setPositiveButton("Da, actualizează", (dialog, which) -> sendUpdateRequest())
-                .setNegativeButton("Renunță", null)
-                .show();
-    }
-
-    private void sendUpdateRequest() {
-        String nrInv = asset.getNrInventar();
         AssetUpdateRequest req = new AssetUpdateRequest();
-
         req.setDenumireObiect(etDenumire.getText().toString());
         req.setCaracteristiciObiect(etCaracteristici.getText().toString());
         req.setGestionarActual(etGestActual.getText().toString());
@@ -374,9 +358,9 @@ public class AssetDetailActivity extends AppCompatActivity {
         req.setLocatia(etLocatie.getText().toString());
         req.setCamera(etCamera.getText().toString());
 
-        setLoading(true, "Se actualizează datele bunului " + nrInv + "...");
+        setLoading(true, "Se actualizează datele...");
 
-        apiService.updateAssetByNr(nrInv, req).enqueue(new Callback<AssetDto>() {
+        apiService.updateAssetByNr(asset.getNrInventar(), req).enqueue(new Callback<AssetDto>() {
             @Override
             public void onResponse(Call<AssetDto> call, Response<AssetDto> response) {
                 setLoading(false, null);
@@ -399,7 +383,7 @@ public class AssetDetailActivity extends AppCompatActivity {
                 asset = updated;
                 bindAssetToViews();
                 Toast.makeText(AssetDetailActivity.this,
-                        "Datele bunului au fost actualizate.",
+                        "Datele au fost actualizate.",
                         Toast.LENGTH_SHORT).show();
             }
 
@@ -415,34 +399,25 @@ public class AssetDetailActivity extends AppCompatActivity {
 
     private void onDeleteClicked() {
         if (apiService == null) {
-            Toast.makeText(this,
-                    "Configurarea serverului lipsește.",
-                    Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        final String nrInv = asset.getNrInventar();
-        if (TextUtils.isEmpty(nrInv)) {
-            Toast.makeText(this,
-                    "Nu există număr de inventar pentru acest bun.",
-                    Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Configurarea serverului lipsește.", Toast.LENGTH_LONG).show();
             return;
         }
 
         new AlertDialog.Builder(this)
-                .setTitle("Ștergi bunul?")
-                .setMessage("Ești sigur că vrei să ȘTERGI acest bun?\n\nNr inventar: " + nrInv
-                        + "\n\n(În backend este implementată o ștergere soft/propus casare.)")
-                .setPositiveButton("Da, șterge", this::confirmDelete)
+                .setTitle("Șterge bunul?")
+                .setMessage("Ești sigur că vrei să ștergi acest bun? Acțiunea este ireversibilă.\n\nNr inventar: "
+                        + asset.getNrInventar())
+                .setPositiveButton("Da, șterge", (dialog, which) -> sendDeleteRequest())
                 .setNegativeButton("Renunță", null)
                 .show();
     }
 
-    private void confirmDelete(DialogInterface dialog, int which) {
-        String nrInv = asset.getNrInventar();
-        setLoading(true, "Se șterge bunul " + nrInv + "...");
+    private void sendDeleteRequest() {
+        if (apiService == null) return;
 
-        apiService.deleteAssetByNr(nrInv).enqueue(new Callback<AssetDto>() {
+        setLoading(true, "Se șterge bunul...");
+
+        apiService.deleteAssetByNr(asset.getNrInventar()).enqueue(new Callback<AssetDto>() {
             @Override
             public void onResponse(Call<AssetDto> call, Response<AssetDto> response) {
                 setLoading(false, null);
@@ -455,8 +430,8 @@ public class AssetDetailActivity extends AppCompatActivity {
                 }
 
                 Toast.makeText(AssetDetailActivity.this,
-                        "Bunul a fost șters (soft delete).",
-                        Toast.LENGTH_LONG).show();
+                        "Bunul a fost șters.",
+                        Toast.LENGTH_SHORT).show();
 
                 returnAssetResult(true);
                 finish();
@@ -466,7 +441,7 @@ public class AssetDetailActivity extends AppCompatActivity {
             public void onFailure(Call<AssetDto> call, Throwable t) {
                 setLoading(false, null);
                 Toast.makeText(AssetDetailActivity.this,
-                        "Eroare de rețea la ștergere: " + t.getMessage(),
+                        "Eroare de rețea: " + t.getMessage(),
                         Toast.LENGTH_LONG).show();
             }
         });
