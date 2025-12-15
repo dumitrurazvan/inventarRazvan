@@ -123,7 +123,7 @@ public class AssetDetailActivity extends AppCompatActivity {
         Retrofit retrofit = ApiClient.create(baseUrl);
         apiService = retrofit.create(ApiService.class);
     }
-//test1234
+//test12342
     private void bindAssetToViews() {
         String title = asset.getCaracteristiciObiect();
         if (isEmpty(title)) {
