@@ -264,12 +264,9 @@ public class InventoryActivity extends AppCompatActivity {
 
                 if (q != null) {
                     String nr = a.getNrInventar();
-                    String crt = a.getNrCrt();
                     boolean matchNr = nr != null
                             && nr.toUpperCase(Locale.ROOT).contains(q);
-                    boolean matchCrt = crt != null
-                            && crt.toUpperCase(Locale.ROOT).contains(q);
-                    if (!matchNr && !matchCrt) {
+                    if (!matchNr) {
                         continue;
                     }
                 }
