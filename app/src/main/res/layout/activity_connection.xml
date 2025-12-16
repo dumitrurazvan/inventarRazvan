@@ -60,27 +60,26 @@
             android:gravity="center_horizontal"
             android:orientation="horizontal">
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/connect_printer_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:backgroundTint="@color/posta_blue"
                 android:text="@string/connect" />
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/disconnect_printer_button"
+                style="?attr/materialButtonOutlinedStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:backgroundTint="@color/posta_blue"
                 android:text="@string/disconnect" />
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/print_button"
+                style="?attr/materialButtonOutlinedStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:backgroundTint="@color/posta_blue"
                 android:text="@string/print_test" />
         </LinearLayout>
 
@@ -95,11 +94,12 @@
         android:text="IP server" />
 
     <EditText
+
         android:id="@+id/etIp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="ex: 192.168.0.10"
-        android:inputType="text" />
+        android:inputType="number" />
 
     <!-- Port -->
     <TextView
@@ -142,13 +142,11 @@
     </LinearLayout>
 
     <!-- Connect button -->
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnConnect"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        android:backgroundTint="@color/posta_blue"
-        android:text="Conectează-te"
-        android:textColor="@color/white" />
+        android:text="Conectează-te" />
 
 </LinearLayout>
