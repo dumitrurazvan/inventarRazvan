@@ -6,7 +6,6 @@
     android:padding="16dp">
 
     <LinearLayout
-        android:layout_marginTop="30dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
@@ -18,7 +17,7 @@
             android:layout_weight="1"
             android:hint="Cauta dupa nr. inventar"
             android:imeOptions="actionSearch"
-            android:inputType="number" />
+            android:inputType="text" />
 
         <Button
             android:id="@+id/btnSearch"
@@ -33,8 +32,8 @@
         android:layout_marginTop="8dp"
         android:layout_weight="1">
 
-        <ListView
-            android:id="@+id/lvSearchResults"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvSearchResults"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 

@@ -8,6 +8,7 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -40,7 +41,7 @@ public class AssetAdapter extends RecyclerView.Adapter<AssetAdapter.AssetViewHol
 
     public AssetAdapter(List<AssetDto> assets,
                         Set<Long> selectedAssetIds,
-                        String roomDisplayName,
+                        @Nullable String roomDisplayName,
                         OnSelectionChangedListener selectionListener,
                         OnValidateClickListener validateClickListener,
                         OnAssetClickListener assetClickListener) {
@@ -96,7 +97,7 @@ public class AssetAdapter extends RecyclerView.Adapter<AssetAdapter.AssetViewHol
 
         public void bind(AssetDto asset,
                          Set<Long> selectedAssetIds,
-                         String roomDisplayName,
+                         @Nullable String roomDisplayName,
                          OnSelectionChangedListener selectionListener,
                          OnValidateClickListener validateClickListener,
                          OnAssetClickListener assetClickListener) {
@@ -110,7 +111,11 @@ public class AssetAdapter extends RecyclerView.Adapter<AssetAdapter.AssetViewHol
             tvTitle.setText(title);
 
             tvNrInventar.setText(asset.getNrInventar());
-            tvSubtitle.setText(roomDisplayName);
+            if (roomDisplayName != null) {
+                tvSubtitle.setText(roomDisplayName);
+            } else {
+                tvSubtitle.setText(asset.getRoomDisplayName());
+            }
 
             String owner = asset.getGestionarActual();
             tvOwner.setText(notEmpty(owner) ? owner : "");
