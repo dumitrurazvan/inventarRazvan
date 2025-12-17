@@ -23,6 +23,9 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -252,7 +255,8 @@ public class ConnectionActivity extends AppCompatActivity {
         }
         executorService.execute(() -> {
             try {
-                printerManager.printLabel("Test Print", null, null, null);
+                String date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+                printerManager.printLabel("Test Print", "Test Label", "Connection Screen", "Test Gestionar", date);
                 handler.post(() -> Toast.makeText(ConnectionActivity.this, "Print command sent.", Toast.LENGTH_SHORT).show());
             } catch (IOException e) {
                 Log.e(TAG, "Print failed", e);

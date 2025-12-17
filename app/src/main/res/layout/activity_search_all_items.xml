@@ -8,6 +8,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
         android:orientation="horizontal">
 
         <EditText
@@ -17,7 +18,7 @@
             android:layout_weight="1"
             android:hint="Cauta dupa nr. inventar"
             android:imeOptions="actionSearch"
-            android:inputType="text" />
+            android:inputType="number" />
 
         <Button
             android:id="@+id/btnSearch"

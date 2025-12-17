@@ -378,7 +378,8 @@ public class InventoryActivity extends AppCompatActivity {
                         InventoryActivity.this,
                         updated.getNrInventar(),
                         labelTitle,
-                        roomDisplayName
+                        roomDisplayName,
+                        updated.getGestionarActual()
                 );
             }
 
@@ -634,7 +635,8 @@ public class InventoryActivity extends AppCompatActivity {
                         InventoryActivity.this,
                         updated.getNrInventar(),
                         labelTitle,
-                        roomDisplayName
+                        roomDisplayName,
+                        updated.getGestionarActual()
                 );
 
                 runBatchValidation(apiService, batchList, index + 1);

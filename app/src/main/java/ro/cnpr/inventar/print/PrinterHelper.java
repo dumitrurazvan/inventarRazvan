@@ -35,12 +35,14 @@ public class PrinterHelper {
      * @param nrInventar     QR content and big text.
      * @param title          asset title (caracteristici / denumire).
      * @param locationCamera e.g. "DACIA - 203".
+     * @param gestionar      the asset owner.
      * @return true if sending data to the printer succeeded, false otherwise.
      */
     public static boolean printLabel(Context context,
                                      String nrInventar,
                                      String title,
-                                     String locationCamera) {
+                                     String locationCamera,
+                                     String gestionar) {
         HprtPrinterManager manager = HprtPrinterManager.getInstance();
 
         try {
@@ -53,7 +55,7 @@ public class PrinterHelper {
             String date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
                     .format(new Date());
 
-            manager.printLabel(nrInventar, title, locationCamera, date);
+            manager.printLabel(nrInventar, title, locationCamera, gestionar, date);
             Log.d(TAG, "printLabel OK for nrInventar=" + nrInventar);
             return true;
         } catch (IOException e) {

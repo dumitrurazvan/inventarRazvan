@@ -131,6 +131,7 @@ public class HprtPrinterManager {
     public synchronized void printLabel(String nrInventar,
                                         String title,
                                         String locationCamera,
+                                        String gestionar,
                                         String dateText) throws IOException {
         if (!isConnected()) {
             throw new IOException("Printer not connected.");
@@ -139,7 +140,7 @@ public class HprtPrinterManager {
         // Explicitly reset the printer to a known state before each print job.
         outputStream.write(new byte[]{0x1B, 0x40}); // ESC @ - Initialize Printer
 
-        byte[] data = ESCPrinter.getESCCommand(nrInventar, title, locationCamera, dateText);
+        byte[] data = ESCPrinter.getESCCommand(nrInventar, title, locationCamera, gestionar, dateText);
         if (data.length == 0) {
             throw new IOException("ESC/POS command buffer is empty (build failed).");
         }

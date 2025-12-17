@@ -1,6 +1,5 @@
 package ro.cnpr.inventar.ui.asset;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -18,6 +17,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.Set;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -25,6 +26,7 @@ import retrofit2.Retrofit;
 import ro.cnpr.inventar.R;
 import ro.cnpr.inventar.model.AssetDto;
 import ro.cnpr.inventar.model.AssetUpdateRequest;
+import ro.cnpr.inventar.model.RoomsCache;
 import ro.cnpr.inventar.network.ApiClient;
 import ro.cnpr.inventar.network.ApiService;
 import ro.cnpr.inventar.prefs.PrefsManager;
@@ -35,14 +37,11 @@ public class AssetDetailActivity extends AppCompatActivity {
     public static final String EXTRA_ASSET = "extra_asset";
     public static final String EXTRA_RESULT_ASSET = "extra_result_asset";
     public static final String EXTRA_RESULT_DELETED = "extra_result_deleted";
+
     private TextView tvTitle;
     private TextView tvNrInv;
     private TextView tvType;
     private TextView tvNrCrt;
-    private TextView tvFlags;
-    private TextView tvRoomInfo;
-    private TextView tvStatus;
-    private ProgressBar progressBar;
     private EditText etDenumire;
     private EditText etCaracteristici;
     private EditText etGestActual;
@@ -51,13 +50,17 @@ public class AssetDetailActivity extends AppCompatActivity {
     private EditText etCompCustodie;
     private EditText etLocatie;
     private EditText etCamera;
+    private TextView tvFlags;
+    private TextView tvRoomInfo;
+    private TextView tvStatus;
+    private ProgressBar progressBar;
     private Button btnValidate;
     private Button btnPrint;
     private Button btnUpdate;
     private Button btnDelete;
+
     private AssetDto asset;
     private ApiService apiService;
-
     private boolean resultSet = false;
 
     @Override
@@ -69,11 +72,6 @@ public class AssetDetailActivity extends AppCompatActivity {
         tvNrInv = findViewById(R.id.tvAssetDetailNrInv);
         tvType = findViewById(R.id.tvAssetDetailType);
         tvNrCrt = findViewById(R.id.tvAssetDetailNrCrt);
-        tvFlags = findViewById(R.id.tvAssetDetailFlags);
-        tvRoomInfo = findViewById(R.id.tvAssetDetailRoom);
-        tvStatus = findViewById(R.id.tvAssetDetailStatus);
-        progressBar = findViewById(R.id.progressBarAssetDetail);
-
         etDenumire = findViewById(R.id.etAssetDetailDenumire);
         etCaracteristici = findViewById(R.id.etAssetDetailCaracteristici);
         etGestActual = findViewById(R.id.etAssetDetailGestionarActual);
@@ -82,7 +80,10 @@ public class AssetDetailActivity extends AppCompatActivity {
         etCompCustodie = findViewById(R.id.etAssetDetailCompartimentCustodie);
         etLocatie = findViewById(R.id.etAssetDetailLocatie);
         etCamera = findViewById(R.id.etAssetDetailCamera);
-
+        tvFlags = findViewById(R.id.tvAssetDetailFlags);
+        tvRoomInfo = findViewById(R.id.tvAssetDetailRoom);
+        tvStatus = findViewById(R.id.tvAssetDetailStatus);
+        progressBar = findViewById(R.id.progressBarAssetDetail);
         btnValidate = findViewById(R.id.btnDetailValidate);
         btnPrint = findViewById(R.id.btnDetailPrint);
         btnUpdate = findViewById(R.id.btnDetailUpdate);
@@ -118,12 +119,12 @@ public class AssetDetailActivity extends AppCompatActivity {
             btnPrint.setEnabled(false);
             return;
         }
-//testt
+
         String baseUrl = "http://" + ip + ":" + port + "/api/";
         Retrofit retrofit = ApiClient.create(baseUrl);
         apiService = retrofit.create(ApiService.class);
     }
-//test12342
+
     private void bindAssetToViews() {
         String title = asset.getCaracteristiciObiect();
         if (isEmpty(title)) {
@@ -323,12 +324,14 @@ public class AssetDetailActivity extends AppCompatActivity {
         String loc = etLocatie.getText().toString();
         String cam = etCamera.getText().toString();
         String locCam = loc + " - " + cam;
+        String gestionar = etGestActual.getText().toString();
 
         boolean ok = PrinterHelper.printLabel(
                 this,
                 nrInv,
                 title,
-                locCam
+                locCam,
+                gestionar
         );
 
         if (ok) {
@@ -342,12 +345,26 @@ public class AssetDetailActivity extends AppCompatActivity {
 
     private void onUpdateClicked() {
         if (apiService == null) {
-            Toast.makeText(this,
-                    "Configurarea serverului lipsește.",
-                    Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Configurarea serverului lipsește.", Toast.LENGTH_LONG).show();
             return;
         }
 
+        String newLocation = etLocatie.getText().toString().trim();
+        Set<String> existingLocations = RoomsCache.getDistinctLocations();
+
+        if (!existingLocations.contains(newLocation)) {
+            new AlertDialog.Builder(this)
+                    .setTitle("Creezi o locație nouă?")
+                    .setMessage("Locația \"" + newLocation + "\" nu există. Ești sigur că vrei să o creezi?")
+                    .setPositiveButton("Da, continuă", (dialog, which) -> sendUpdateRequest())
+                    .setNegativeButton("Renunță", null)
+                    .show();
+        } else {
+            sendUpdateRequest();
+        }
+    }
+
+    private void sendUpdateRequest() {
         AssetUpdateRequest req = new AssetUpdateRequest();
         req.setDenumireObiect(etDenumire.getText().toString());
         req.setCaracteristiciObiect(etCaracteristici.getText().toString());
@@ -366,33 +383,25 @@ public class AssetDetailActivity extends AppCompatActivity {
                 setLoading(false, null);
 
                 if (!response.isSuccessful()) {
-                    Toast.makeText(AssetDetailActivity.this,
-                            "Eroare la actualizare (cod " + response.code() + ")",
-                            Toast.LENGTH_LONG).show();
+                    Toast.makeText(AssetDetailActivity.this, "Eroare la actualizare (cod " + response.code() + ")", Toast.LENGTH_LONG).show();
                     return;
                 }
 
                 AssetDto updated = response.body();
                 if (updated == null) {
-                    Toast.makeText(AssetDetailActivity.this,
-                            "Serverul a răspuns fără date.",
-                            Toast.LENGTH_LONG).show();
+                    Toast.makeText(AssetDetailActivity.this, "Serverul a răspuns fără date.", Toast.LENGTH_LONG).show();
                     return;
                 }
 
                 asset = updated;
                 bindAssetToViews();
-                Toast.makeText(AssetDetailActivity.this,
-                        "Datele au fost actualizate.",
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(AssetDetailActivity.this, "Datele au fost actualizate.", Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onFailure(Call<AssetDto> call, Throwable t) {
                 setLoading(false, null);
-                Toast.makeText(AssetDetailActivity.this,
-                        "Eroare de rețea: " + t.getMessage(),
-                        Toast.LENGTH_LONG).show();
+                Toast.makeText(AssetDetailActivity.this, "Eroare de rețea: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }

@@ -18,7 +18,7 @@ public class ESCPrinter {
      * Generates ESC/POS commands to print a label for a 50x32mm media size.
      * NOTE: Printer initialization (ESC @) is handled by the calling manager class.
      */
-    public static byte[] getESCCommand(String nrInventar, String itemName, String location, String date) {
+    public static byte[] getESCCommand(String nrInventar, String itemName, String location, String gestionar, String date) {
         try {
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
@@ -50,26 +50,25 @@ public class ESCPrinter {
             stream.write(new byte[]{0x1D, 0x21, 0x00}); // Normal size
 
             // --- Print item name (asset description), wrapped to 2 lines ---
-            int maxLineChars = 16; // Approx chars per line
-            int totalMaxChars = 32;
+
             String itemNameToPrint = itemName != null ? itemName : "";
 
-            if (itemNameToPrint.length() > totalMaxChars) {
-                itemNameToPrint = itemNameToPrint.substring(0, totalMaxChars);
+            if (itemNameToPrint.length() > 16) {
+                itemNameToPrint = itemNameToPrint.substring(0, 16);
             }
 
             String line1 = itemNameToPrint;
             String line2 = "";
 
-            if (itemNameToPrint.length() > maxLineChars) {
-                int splitPos = itemNameToPrint.lastIndexOf(' ', maxLineChars);
+            if (itemNameToPrint.length() > 16) {
+                int splitPos = itemNameToPrint.lastIndexOf(' ', 16);
                 if (splitPos > 0) {
                     line2 = itemNameToPrint.substring(splitPos).trim();
                     line1 = itemNameToPrint.substring(0, splitPos);
                 } else {
                     // No space found, hard wrap
-                    line2 = itemNameToPrint.substring(maxLineChars);
-                    line1 = itemNameToPrint.substring(0, maxLineChars);
+                    line2 = itemNameToPrint.substring(16);
+                    line1 = itemNameToPrint.substring(0, 16);
                 }
             }
 
@@ -78,15 +77,24 @@ public class ESCPrinter {
             stream.write(line1.getBytes("GBK"));
 
             if (!line2.isEmpty()) {
-                currentY += 30; // Move to next line
+                currentY += 35; // Move to next line
                 setAbsolutePosition(stream, 190, currentY);
                 stream.write(line2.getBytes("GBK"));
             }
 
             // --- Print Room Number and Building Name from 'location' parameter ---
-            currentY += 30; // Move to next line for room number
+            currentY += 35; // Move to next line for room number
             setAbsolutePosition(stream, 190, currentY);
             stream.write(location.getBytes("GBK"));
+
+            // --- Print Gestionar ---
+            currentY += 35; // Move to next line for room number
+            setAbsolutePosition(stream, 190, currentY);
+            String gestionarToPrint = gestionar != null ? gestionar : "";
+            if (gestionarToPrint.length() > 16) {
+                gestionarToPrint = gestionarToPrint.substring(0, 16);
+            }
+            stream.write(gestionarToPrint.getBytes("GBK"));
 
             // Print the page and exit page mode
             stream.write(0x0C); // FF (Form Feed)

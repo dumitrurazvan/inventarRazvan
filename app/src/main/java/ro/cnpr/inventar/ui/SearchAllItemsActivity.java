@@ -186,7 +186,8 @@ public class SearchAllItemsActivity extends AppCompatActivity {
                         SearchAllItemsActivity.this,
                         updated.getNrInventar(),
                         labelTitle,
-                        updated.getRoomDisplayName()
+                        updated.getRoomDisplayName(),
+                        updated.getGestionarActual()
                 );
             }
 
