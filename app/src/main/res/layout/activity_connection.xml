@@ -99,7 +99,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="ex: 192.168.0.10"
-        android:inputType="number" />
+        android:inputType="text" />
 
     <!-- Port -->
     <TextView
@@ -114,7 +114,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="ex: 8081"
-        android:inputType="number" />
+        android:inputType="text"
+        />
 
     <LinearLayout
         android:layout_width="match_parent"

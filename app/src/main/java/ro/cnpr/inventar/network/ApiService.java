@@ -24,6 +24,9 @@ public interface ApiService {
     @GET("rooms/{roomId}/assets")
     Call<List<AssetDto>> getAssetsInRoom(@Path("roomId") long roomId);
 
+    @GET("assets/by-nr/{nrInventar}")
+    Call<AssetDto> searchAssets(@Path("nrInventar") String nrInventar);
+
     @PATCH("assets/by-nr/{nrInventar}")
     Call<AssetDto> updateAssetByNr(
             @Path("nrInventar") String nrInventar,

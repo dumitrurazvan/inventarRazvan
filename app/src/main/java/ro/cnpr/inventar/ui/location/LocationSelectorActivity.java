@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,6 +32,7 @@ import ro.cnpr.inventar.model.RoomsCache;
 import ro.cnpr.inventar.network.ApiClient;
 import ro.cnpr.inventar.network.ApiService;
 import ro.cnpr.inventar.prefs.PrefsManager;
+import ro.cnpr.inventar.ui.SearchAllItemsActivity;
 import ro.cnpr.inventar.ui.room.RoomSelectorActivity;
 
 public class LocationSelectorActivity extends AppCompatActivity {
@@ -38,6 +40,7 @@ public class LocationSelectorActivity extends AppCompatActivity {
     private TextView tvStatus;
     private ProgressBar progressBar;
     private RecyclerView rvLocations;
+    private Button btnTest;
 
     private final List<LocationWithRoomCount> locationsWithRoomCount = new ArrayList<>();
     private LocationAdapter adapter;
@@ -50,10 +53,16 @@ public class LocationSelectorActivity extends AppCompatActivity {
         tvStatus = findViewById(R.id.tvLocationStatus);
         progressBar = findViewById(R.id.progressBarLocations);
         rvLocations = findViewById(R.id.rvLocations);
+        btnTest = findViewById(R.id.btnTest);
 
         rvLocations.setLayoutManager(new LinearLayoutManager(this));
         adapter = new LocationAdapter(locationsWithRoomCount, this::onLocationSelected);
         rvLocations.setAdapter(adapter);
+
+        btnTest.setOnClickListener(v -> {
+            Intent intent = new Intent(LocationSelectorActivity.this, SearchAllItemsActivity.class);
+            startActivity(intent);
+        });
 
         loadRoomsFromBackend();
     }

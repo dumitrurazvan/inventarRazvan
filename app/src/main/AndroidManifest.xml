@@ -55,6 +55,11 @@
             android:name=".ui.asset.AssetDetailActivity"
             android:exported="false" />
 
+        <!-- Screen 6 – Search All Assets -->
+        <activity
+            android:name=".ui.SearchAllItemsActivity"
+            android:exported="false" />
+
 
     </application>
 
