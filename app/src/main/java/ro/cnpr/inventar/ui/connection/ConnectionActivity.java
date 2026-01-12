@@ -1,7 +1,9 @@
 package ro.cnpr.inventar.ui.connection;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.content.RestrictionsManager;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -74,13 +76,17 @@ public class ConnectionActivity extends AppCompatActivity {
         Button disconnectPrinterButton = findViewById(R.id.disconnect_printer_button);
         Button printButton = findViewById(R.id.print_button);
 
+        // 1. Try to get configuration from MDM (Bento)
+        loadMdmConfigurations();
+
+        // 2. If not MDM, load from local storage
         String savedIp = PrefsManager.getServerIp(this);
         String savedPort = PrefsManager.getServerPort(this);
 
-        if (!TextUtils.isEmpty(savedIp)) {
+        if (TextUtils.isEmpty(etIp.getText()) && !TextUtils.isEmpty(savedIp)) {
             etIp.setText(savedIp);
         }
-        if (!TextUtils.isEmpty(savedPort)) {
+        if (TextUtils.isEmpty(etPort.getText()) && !TextUtils.isEmpty(savedPort)) {
             etPort.setText(savedPort);
         }
 
@@ -95,7 +101,28 @@ public class ConnectionActivity extends AppCompatActivity {
         disconnectPrinterButton.setOnClickListener(v -> disconnectPrinter());
         printButton.setOnClickListener(v -> printTestLabel());
 
-        connectPrinter(); // Automatically try to connect at startup
+        connectPrinter(); 
+    }
+
+    /**
+     * Reads restrictions set by MDM (Bento).
+     * Admin can set "server_ip" and "server_port" in Bento console.
+     */
+    private void loadMdmConfigurations() {
+        RestrictionsManager restrictionsManager = (RestrictionsManager) getSystemService(Context.RESTRICTIONS_SERVICE);
+        if (restrictionsManager != null) {
+            Bundle restrictions = restrictionsManager.getApplicationRestrictions();
+            if (restrictions != null) {
+                if (restrictions.containsKey("server_ip")) {
+                    String mdmIp = restrictions.getString("server_ip");
+                    if (!TextUtils.isEmpty(mdmIp)) etIp.setText(mdmIp);
+                }
+                if (restrictions.containsKey("server_port")) {
+                    String mdmPort = restrictions.getString("server_port");
+                    if (!TextUtils.isEmpty(mdmPort)) etPort.setText(mdmPort);
+                }
+            }
+        }
     }
 
     @Override
@@ -129,20 +156,11 @@ public class ConnectionActivity extends AppCompatActivity {
         try {
             port = Integer.parseInt(portStr);
         } catch (NumberFormatException e) {
-            Toast.makeText(this,
-                    "Port invalid. Folosește doar cifre (ex: 8081).",
-                    Toast.LENGTH_LONG).show();
-            return;
-        }
-        if (port < 1 || port > 65535) {
-            Toast.makeText(this,
-                    "Port invalid. Interval permis: 1 - 65535.",
-                    Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Port invalid.", Toast.LENGTH_LONG).show();
             return;
         }
 
         String baseUrl = "http://" + ip + ":" + portStr + "/api/";
-
         progressBar.setVisibility(View.VISIBLE);
         btnConnect.setEnabled(false);
         tvStatus.setText("Se verifică conexiunea...");
@@ -151,97 +169,58 @@ public class ConnectionActivity extends AppCompatActivity {
         try {
             retrofit = ApiClient.create(baseUrl);
         } catch (IllegalArgumentException e) {
-
             progressBar.setVisibility(View.GONE);
             btnConnect.setEnabled(true);
-            tvStatus.setText("URL invalid: " + e.getMessage());
-            Toast.makeText(this,
-                    "URL backend invalid. Verifică IP și port.",
-                    Toast.LENGTH_LONG).show();
+            tvStatus.setText("URL invalid.");
             return;
         }
 
         ApiService apiService = retrofit.create(ApiService.class);
-
         apiService.getHealth().enqueue(new Callback<HealthResponse>() {
             @Override
             public void onResponse(Call<HealthResponse> call, Response<HealthResponse> response) {
                 progressBar.setVisibility(View.GONE);
                 btnConnect.setEnabled(true);
 
-                if (!response.isSuccessful()) {
-                    tvStatus.setText("Eroare la apelul /health (cod " + response.code() + ")");
-                    Toast.makeText(ConnectionActivity.this,
-                            "Eroare server: " + response.code(),
-                            Toast.LENGTH_LONG).show();
-                    return;
+                if (response.isSuccessful()) {
+                    PrefsManager.setServerIp(ConnectionActivity.this, ip);
+                    PrefsManager.setServerPort(ConnectionActivity.this, portStr);
+                    tvStatus.setText("Conectat la " + ip + ":" + portStr);
+                    startActivity(new Intent(ConnectionActivity.this, LocationSelectorActivity.class));
+                } else {
+                    tvStatus.setText("Eroare server (cod " + response.code() + ")");
                 }
-
-                HealthResponse body = response.body();
-                if (body == null || !"OK".equalsIgnoreCase(body.getStatus())) {
-                    tvStatus.setText("Backend răspunde, dar status != OK");
-                    Toast.makeText(ConnectionActivity.this,
-                            "Conexiune parțială (status != OK)",
-                            Toast.LENGTH_LONG).show();
-                    return;
-                }
-
-                PrefsManager.setServerIp(ConnectionActivity.this, ip);
-                PrefsManager.setServerPort(ConnectionActivity.this, portStr);
-
-                tvStatus.setText("Conectat la " + ip + ":" + portStr);
-
-                Intent intent = new Intent(ConnectionActivity.this, LocationSelectorActivity.class);
-                startActivity(intent);
             }
 
             @Override
             public void onFailure(Call<HealthResponse> call, Throwable t) {
                 progressBar.setVisibility(View.GONE);
                 btnConnect.setEnabled(true);
-                tvStatus.setText("Eroare de rețea la /health");
-                Toast.makeText(ConnectionActivity.this,
-                        "Nu s-a putut contacta serverul: " + t.getMessage(),
-                        Toast.LENGTH_LONG).show();
+                tvStatus.setText("Eroare de rețea.");
             }
         });
     }
 
-    // --- Printer and Permissions --- //
-
     private void connectPrinter() {
-        if (!checkAndRequestBluetoothPermissions()) {
-            Toast.makeText(this, "Bluetooth permissions are required.", Toast.LENGTH_LONG).show();
-            return;
-        }
+        if (!checkAndRequestBluetoothPermissions()) return;
         if (printerManager.isConnected()) {
             updatePrinterStatus();
             return;
         }
-
         executorService.execute(() -> {
             try {
                 handler.post(() -> ((TextView) findViewById(R.id.printer_status_text_view)).setText(R.string.connecting));
                 printerManager.connect(PRINTER_NAME);
-                handler.post(() -> {
-                    updatePrinterStatus();
-                    Toast.makeText(ConnectionActivity.this, "Printer connected OK", Toast.LENGTH_SHORT).show();
-                });
+                handler.post(this::updatePrinterStatus);
             } catch (IOException e) {
                 Log.e(TAG, "Connection failed", e);
-                handler.post(() -> {
-                    Toast.makeText(ConnectionActivity.this, "Connection failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    updatePrinterStatus();
-                });
+                handler.post(this::updatePrinterStatus);
             }
         });
     }
 
     private void disconnectPrinter() {
-        if (!printerManager.isConnected()) {
-            updatePrinterStatus();
-            return;
-        }
+        if (!printerManager.isConnected()) return;
         executorService.execute(() -> {
             printerManager.disconnect();
             handler.post(this::updatePrinterStatus);
@@ -249,18 +228,14 @@ public class ConnectionActivity extends AppCompatActivity {
     }
 
     private void printTestLabel() {
-        if (!printerManager.isConnected()) {
-            Toast.makeText(this, "Printer is not connected.", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        if (!printerManager.isConnected()) return;
         executorService.execute(() -> {
             try {
                 String date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
-                printerManager.printLabel("Test Print", "Test Label", "Connection Screen", "Test Gestionar", date);
-                handler.post(() -> Toast.makeText(ConnectionActivity.this, "Print command sent.", Toast.LENGTH_SHORT).show());
+                printerManager.printLabel("Test MDM", "Label Print", "Bento MDM", "Admin", date);
+                handler.post(() -> Toast.makeText(ConnectionActivity.this, "Print OK.", Toast.LENGTH_SHORT).show());
             } catch (IOException e) {
-                Log.e(TAG, "Print failed", e);
-                handler.post(() -> Toast.makeText(ConnectionActivity.this, "Print failed: " + e.getMessage(), Toast.LENGTH_LONG).show());
+                handler.post(() -> Toast.makeText(ConnectionActivity.this, "Print Failed.", Toast.LENGTH_SHORT).show());
             }
         });
     }
@@ -293,19 +268,14 @@ public class ConnectionActivity extends AppCompatActivity {
                 return false;
             }
         }
-        // For older Android versions, permissions are granted at install time.
         return true;
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == BLUETOOTH_PERMISSION_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Permission granted. Please press Connect.", Toast.LENGTH_LONG).show();
-            } else {
-                Toast.makeText(this, "Permission denied. Cannot connect to printer.", Toast.LENGTH_LONG).show();
-            }
+        if (requestCode == BLUETOOTH_PERMISSION_REQUEST_CODE && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            connectPrinter();
         }
     }
 }
